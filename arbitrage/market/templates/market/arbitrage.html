@@ -1,0 +1,728 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CS Arbitrage</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body{
+            margin:0;
+            font-family:'Inter',sans-serif;
+            background:#070a0f;
+            color:#e8eef7;
+            overflow-x:hidden;
+        }
+
+        /* ===== PARALLAX ===== */
+        .bg{
+            position:fixed;
+            inset:0;
+            z-index:-3;
+        }
+
+        .layer{
+            position:absolute;
+            inset:-20%;
+            background-size:cover;
+            background-position:center;
+            will-change:transform;
+            filter:brightness(0.6) saturate(1.1);
+        }
+
+        .layer1{
+<!--            background-image:url("https://www.youtube.com/watch?v=meEJ49aVW3M&list=RDmeEJ49aVW3M&start_radio=1");-->
+            opacity:0.35;
+        }
+
+        .layer2{
+            background-image:url("https://images.unsplash.com/photo-1557683316-973673baf926?w=1600");
+            opacity:0.18;
+        }
+
+        .overlay{
+            position:fixed;
+            inset:0;
+            background:radial-gradient(circle at top, rgba(0,229,255,0.10), rgba(0,0,0,0.92));
+            z-index:-1;
+        }
+
+        /* ===== LAYOUT ===== */
+        .wrapper{
+            max-width:1300px;
+            margin:auto;
+            padding:20px;
+        }
+
+        h1{
+            text-align:center;
+            margin:20px 0;
+            letter-spacing:2px;
+        }
+
+        /* controls */
+        .controls{
+            display:flex;
+            gap:10px;
+            margin-bottom:15px;
+        }
+
+        input{
+            flex:1;
+            padding:10px;
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.08);
+            background:#111827;
+            color:#fff;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .layout{
+            display:flex;
+            gap:18px;
+            align-items:flex-start;
+        }
+
+        /* LEFT SCROLL AREA */
+        .left{
+            flex:0.9;
+            max-height:75vh;
+            overflow-y:auto;
+            padding-right:6px;
+        }
+
+        /* GRID 2x4 */
+        .cards-grid{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:12px;
+        }
+
+        /* CARD */
+        .card{
+            perspective:1000px;
+            height:160px;
+        }
+
+        .inner{
+            width:100%;
+            height:100%;
+            transition:0.7s;
+            transform-style:preserve-3d;
+            position:relative;
+        }
+
+        .card:hover .inner{
+            transform:rotateY(180deg);
+        }
+
+        .front, .back{
+            position:absolute;
+            inset:0;
+            border-radius:14px;
+            backface-visibility:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+
+            background:#0f1722;
+            border:1px solid rgba(255,255,255,0.06);
+            box-shadow:0 12px 30px rgba(0,0,0,0.5);
+        }
+
+        .back{
+            transform:rotateY(180deg);
+            background:#0b1220;
+        }
+
+        /* image bigger */
+        .card img{
+            width:110px;
+            height:110px;
+            object-fit:contain;
+            border-radius:12px;
+        }
+
+        /* RIGHT TABLE */
+        .right{
+            flex:1.1;
+        }
+
+.table-wrap{
+    background: rgba(15, 23, 34, 0.22);
+    border: 1px solid rgba(0,255,170,0.15);
+    border-radius: 14px;
+    padding: 10px;
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow: 0 0 25px rgba(0,255,170,0.05);
+
+    /* ВАЖНО */
+    flex:1;
+    overflow-y:auto;
+}
+
+/* сама таблица */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background: transparent;
+}
+
+/* ячейки */
+th, td{
+    background: transparent !important;
+    border: none;
+}
+
+/* заголовок */
+th{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+}
+
+/* строки */
+tr{
+    background: rgba(255,255,255,0.02);
+    transition: 0.2s;
+}
+
+/* hover */
+tr:hover{
+    background: rgba(0,255,170,0.08);
+}
+
+/* profit зелёный жирный */
+.profit{
+    color:#00ff99;
+    font-weight:800;
+}
+
+        .skin-cell{
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .skin-icon{
+            width:42px;
+            height:42px;
+            object-fit:contain;
+            border-radius:8px;
+        }
+
+        .skin-name{
+            font-weight:600;
+        }
+
+
+
+        /* scrollbar */
+        .left::-webkit-scrollbar{
+            width:6px;
+        }
+        .left::-webkit-scrollbar-thumb{
+            background:#00e5ff33;
+            border-radius:10px;
+        }
+        .navbar{
+            position:sticky;
+            top:0;
+            z-index:10;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:12px 20px;
+            background:rgba(10,12,18,0.8);
+            backdrop-filter:blur(10px);
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo{
+            font-weight:800;
+            letter-spacing:2px;
+            color:#00e5ff;
+            animation:blink 2.5s infinite;
+        }
+
+        @keyframes blink{
+            0%,100%{opacity:1;}
+            50%{opacity:0.6;}
+        }
+
+        .nav-right{
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+
+        .nav-right input,
+        .nav-right select{
+            padding:8px 10px;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,0.08);
+            background:#111827;
+            color:#fff;
+        }
+
+        /* ===== PROMO BLOCKS ===== */
+        .promo{
+            margin-top:20px;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+
+        .promo-block{
+            padding:14px;
+            background:#0f1722;
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:12px;
+            opacity:0;
+            transform:translateY(20px);
+            transition:0.6s ease;
+        }
+
+        .promo-block h2{
+            color:#00e5ff;
+            margin:0 0 6px 0;
+        }
+
+        .promo-block p{
+            margin:0;
+            opacity:0.8;
+        }
+
+        /* scroll animation */
+        .promo-block.show{
+            opacity:1;
+            transform:translateY(0);
+        }
+
+        /* glow hover */
+        .promo-block:hover{
+            box-shadow:0 0 20px rgba(0,229,255,0.15);
+        }
+
+        /* ===== SECTION TITLES ===== */
+        .section-title{
+            margin:18px 0 10px;
+            font-size:18px;
+            font-weight:700;
+            color:#00e5ff;
+            letter-spacing:1px;
+        }
+
+        /* ===== PAGINATION UPGRADE ===== */
+        .pagination{
+            margin-top:12px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:10px;
+        }
+
+        .pagination a{
+            padding:6px 12px;
+            border-radius:8px;
+            background:#111827;
+            border:1px solid rgba(255,255,255,0.08);
+            color:#e8eef7;
+            text-decoration:none;
+            transition:0.2s;
+        }
+
+        .pagination a:hover{
+            border-color:#00e5ff;
+            color:#00e5ff;
+            transform:translateY(-1px);
+        }
+
+        .pagination span{
+            opacity:0.7;
+            font-size:14px;
+        }
+        #bgVideo{
+            position:fixed;
+            inset:0;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            z-index:-3;
+        }
+        :root{
+            --glass: rgba(15, 23, 34, 0.25);
+            --border: rgba(0,255,170,0.15);
+            --green: #00ff99;
+        }
+
+        /* ===== GLOBAL GLASS UPGRADE ===== */
+        .card,
+        .front,
+        .back,
+        .table-wrap,
+        .promo-block,
+        .navbar{
+            background: var(--glass) !important;
+            border: 1px solid var(--border) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        /* ===== CARDS ===== */
+        .front, .back{
+            box-shadow: 0 0 20px rgba(0,255,170,0.05);
+        }
+
+        .card{
+            border-radius:14px;
+        }
+
+        /* ===== TABLE ===== */
+        th{
+            background: rgba(10,12,18,0.55) !important;
+            color: var(--green);
+        }
+
+        tr{
+            background: rgba(255,255,255,0.02);
+        }
+
+        tr:hover{
+            background: rgba(0,255,170,0.08);
+        }
+
+        /* ===== PROMO ===== */
+        .promo-block{
+            transition: 0.3s;
+        }
+
+        .promo-block:hover{
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0,255,170,0.12);
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar{
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* ===== INPUTS ===== */
+        input, select{
+            background: rgba(10,12,18,0.6) !important;
+            border: 1px solid rgba(0,255,170,0.15) !important;
+            color: #e8eef7;
+        }
+
+        input:focus{
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 10px rgba(0,255,170,0.2);
+        }
+
+        /* ===== TEXT ACCENT ===== */
+        .logo,
+        .profit,
+        .section-title,
+        h1{
+            color: var(--green) !important;
+        }
+
+        .info-section{
+    margin-top:40px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.info-block{
+    padding:16px;
+    border-radius:14px;
+    background: rgba(15, 23, 34, 0.22);
+    border: 1px solid rgba(0,255,170,0.15);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    opacity:0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.info-block h2{
+    color:#00ff99;
+    margin:0 0 6px 0;
+}
+
+.info-block p{
+    margin:0;
+    opacity:0.8;
+}
+
+.info-block.show{
+    opacity:1;
+    transform: translateY(0);
+}
+
+        .right{
+            flex:1.1;
+            max-height:75vh;
+            display:flex;
+            flex-direction:column;
+        }
+
+.table-wrap::-webkit-scrollbar{
+    width:6px;
+}
+
+.table-wrap::-webkit-scrollbar-thumb{
+    background:#00ff9933;
+    border-radius:10px;
+}
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">CS ARBITRAGE</div>
+
+    <div class="nav-right">
+        <input id="search" placeholder="Search skin...">
+
+        <select id="filter">
+            <option value="">All deals</option>
+            <option value="Steam">Steam</option>
+            <option value="Skinport">Skinport</option>
+        </select>
+    </div>
+</nav>
+
+<div class="bg">
+    <video autoplay id="bgVideo" loop muted playsinline>
+        <source src="{% static 'video/138115-768324070.mp4' %}" type="video/mp4">
+    </video>
+</div>
+<div class="overlay"></div>
+
+<div class="wrapper">
+
+    <h1>CS ARBITRAGE</h1>
+
+    <div class="controls">
+        <input id="search" placeholder="Search skin">
+    </div>
+
+    <div class="layout">
+
+        <!-- LEFT -->
+        <div style="flex:0.9; display:flex; flex-direction:column;">
+
+            <div class="left">
+                <div class="cards-grid">
+
+                    {% for item in result %}
+                    <div class="card">
+                        <div class="inner">
+
+                            <div class="front">
+                                <img src="{{ item.steam_icon }}">
+                            </div>
+
+                            <div class="back">
+                                <div>Steam: {{ item.steam_price }}</div>
+                                <div>Skinport: {{ item.skinport_price }}</div>
+                                <div>Bitskins: {{ item.bitskins_price }}</div>
+                                <div class="profit">Profit: {{ item.profit }}</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- 🔥 ВОТ ТВОЙ PROMO ВНЕ СКРОЛЛА -->
+            <div class="promo">
+
+                <div class="promo-block">
+                    <h2>Find price gaps instantly</h2>
+                    <p>We scan CS2 markets and detect arbitrage opportunities in real time.</p>
+                </div>
+
+                <div class="promo-block">
+                    <h2>Buy low. Sell higher.</h2>
+                    <p>Steam, Skinport and Bitskins differences are tracked automatically.</p>
+                </div>
+
+                <div class="promo-block">
+                    <h2>Profit tracking system</h2>
+                    <p>Every skin is ranked by real profit potential.</p>
+                </div>
+
+            </div>
+            <div class="info-section">
+
+    <div class="info-block reveal">
+        <h2>Arbitrage Intelligence</h2>
+        <p>We track price differences between Steam, Skinport and other marketplaces in real time.</p>
+    </div>
+
+    <div class="info-block reveal">
+        <h2>Zero-effort profit detection</h2>
+        <p>The system automatically highlights skins with positive margin opportunities.</p>
+    </div>
+
+    <div class="info-block reveal">
+        <h2>Market speed advantage</h2>
+        <p>Milliseconds matter. Faster detection = higher profit before price correction.</p>
+    </div>
+
+    <div class="info-block reveal">
+        <h2>Smart ranking system</h2>
+        <p>Skins are sorted by profitability score, not just raw price difference.</p>
+    </div>
+
+</div>
+
+        </div>
+
+
+        <!-- RIGHT -->
+        <div class="right">
+
+            <div class="table-wrap">
+
+                <table id="table">
+                    <tr>
+                        <th>Skin</th>
+                        <th>Steam</th>
+                        <th>Skinport</th>
+                        <th>Bitskins</th>
+                        <th>Profit</th>
+                    </tr>
+
+                    {% for item in result %}
+                    <tr>
+                        <td>
+                            <div class="skin-cell">
+                                <img class="skin-icon" src="{{ item.steam_icon }}">
+                                <span class="skin-name">{{ item.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ item.steam_price }}</td>
+                        <td>{{ item.skinport_price }}</td>
+                        <td>{{ item.bitskins_price }}</td>
+                        <td class="profit">{{ item.profit }}</td>
+                    </tr>
+                    {% endfor %}
+
+                </table>
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
+                    {% endif %}
+
+                    <span>
+                        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<audio id="clickSound"
+       preload="auto"
+       src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+<audio id="bgMusic" loop>
+    <source src="{% static 'audio/music.mp3' %}" type="audio/mpeg">
+</audio>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const sound = document.getElementById("clickSound");
+        if (!sound) return;
+
+        sound.volume = 0.10;
+
+        let unlocked = false;
+        let lastTime = 0;
+
+        // разблокировка аудио
+        document.addEventListener("pointerdown", () => {
+            if (unlocked) return;
+
+            sound.play().then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+                unlocked = true;
+            }).catch(() => {});
+        }, { once: true });
+
+        function play() {
+            if (!unlocked) return;
+
+            const now = Date.now();
+
+            // 💡 анти-спам (очень важно для hover)
+            if (now - lastTime < 80) return;
+            lastTime = now;
+
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
+        }
+
+        // hover + click
+        document.querySelectorAll(".card, .pagination a, #filter").forEach(el => {
+            el.addEventListener("mouseenter", play);
+            el.addEventListener("click", play);
+        });
+
+        window.addEventListener("scroll", () => {
+            const y = window.scrollY;
+            document.getElementById("bgVideo").style.transform =
+                `translateY(${y * 0.2}px) scale(1.1)`;
+        });
+
+        document.addEventListener("click", () => {
+            const music = document.getElementById("bgMusic");
+            if (!music) return;
+
+            music.volume = 0.3;
+            music.play().catch(() => {});
+        }, { once: true });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting){
+                    entry.target.classList.add("show");
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll(".reveal").forEach(el => {
+            observer.observe(el);
+        });
+
+    });
+</script>
+
+</body>
+</html>
